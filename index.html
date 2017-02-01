@@ -1,0 +1,27 @@
+<!doctype HTML>
+<html>
+<head>
+    <title>CodeShare</title>
+    <link rel='stylesheet' href='//cdn.jsdelivr.net/font-hack/2.020/css/hack.min.css'>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <table border=0><tr><td>
+        <div id="container" style="width:800px;height:600px"></div>
+    </td><td>
+        <div id="err"></div>
+        <div>You're in room:<span id="room"></span></div>
+        <form onsubmit="codeshare.joinRoom(); return false;">
+            <input id="roomInput" placeholder="Go to a room (enter)" >
+        </form>
+        <select id="languageSelect">
+        </select>
+    </td></tr></table>
+    <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+    <script src="/node_modules/monaco-editor/min/vs/loader.js"></script>
+    <script src="/script/stateEngine.js"></script>
+    <script src="/script/commitLog.js"></script>
+    <script src="/script/room.js"></script>
+    <script src="/script/codeshare.js"></script>
+</body>
+</html>

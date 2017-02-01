@@ -1,0 +1,4 @@
+For 1-way:
+
+need a pre-connection "walker" to attempt to connect for a bit, 
+  then try the next value. OR race to a real server value then backtrack, trying connections. Drop all but the lowest.

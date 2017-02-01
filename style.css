@@ -1,0 +1,27 @@
+html, body {
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
+body {
+    background: #ccc;
+    font-size: 18px;
+}
+table {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    clear:left;
+}
+td {
+    vertical-align: top;
+}
+
+select {
+    font-size: 18px;
+}
+
+input {
+    font-size: 18px;
+
+}

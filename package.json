@@ -1,0 +1,21 @@
+{
+  "name": "codeshare",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://www.github.com/snadrus/codeshare/"
+  },
+  "author": "Andy Jackson",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "^14.0.0",
+    "gaggle": "^2.1.4",
+    "monaco-editor": "^0.8.0",
+    "webpack": "^1.14.0"
+  }
+}
