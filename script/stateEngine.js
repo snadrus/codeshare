@@ -1,5 +1,4 @@
 window.stateEngine = (function(){
-    var chFunc = null; // how we send notifications to the world.
     var languageTag = document.getElementById("languageSelect");
     var currentLanguage = 'javascript';
     var currentText = [
@@ -32,30 +31,41 @@ window.stateEngine = (function(){
         });
         languageTag.onchange = function(e) {
             monaco.editor.setModelLanguage(editor.getModel(), languageTag.value);
-            if (chFunc) {
-                chFunc({item: "languageSelect", from: currentLanguage, to: languageTag.value});
-            }
+            chFunc({item: "languageSelect", from: currentLanguage, to: languageTag.value});
             currentLanguage = languageTag.value;
         }
 
         // Setup monaco listeners for text change
         editor.onDidChangeModelContent(function(e){
-            var v = editor.getValue()
-            if (chFunc && v !== currentText){
-                chFunc({item: "fulltext", from: currentText,to: v});
-            }
-            currentText = v;
+            var newVal = editor.getValue();
+            chFunc({item: "fulltext", from: currentText,to: newVal});
+            currentText = newVal
         });
         editor.onDidChangeCursorPosition(function(e){
         position = [e.position.column, e.position.lineNumber];
         })
     });
 
+    var updateInProgress;
     function applyPatch(patch){
+        updateInProgress = true;
+        try{
         switch(patch.item){
             case "languageSelect": languageTag.value = patch.to; break;
             case "fulltext": editor.setValue(patch.to); break; // hokey solution for now
         }
+        }catch(e){
+
+        }
+        updateInProgress = false;
+    }
+
+    var chEvt;
+    function chFunc(patch) {
+        if (updateInProgress || !chEvt) {
+            return
+        }
+        chEvt(patch);
     }
 
     function getState() {
@@ -65,7 +75,7 @@ window.stateEngine = (function(){
         ];
     }
     return {
-        changeHandler: function(chFuncReq){ chFunc = chFuncReq; },
+        changeHandler: function(chFuncReq){ chEvt = chFuncReq; },
         applyPatch: applyPatch,
         readOnly: function(b){ 
                 editor.updateOptions({readOnly:b}); 

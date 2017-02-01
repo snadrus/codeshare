@@ -10,7 +10,8 @@
         <div id="container" style="width:800px;height:600px"></div>
     </td><td>
         <div id="err"></div>
-        <div>You're in room:<span id="room"></span></div>
+        <div>You're in room:</div>
+            <input id="room" onClick="this.select()" readonly="readonly">
         <form onsubmit="codeshare.joinRoom(); return false;">
             <input id="roomInput" placeholder="Go to a room (enter)" >
         </form>

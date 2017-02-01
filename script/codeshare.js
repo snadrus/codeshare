@@ -12,7 +12,7 @@ window.codeshare = (function(){
     stateEngine.changeHandler(null);
     // Server setup:
     var roomName = window.room.getName();
-    room.innerText = roomName;
+    room.value = roomName;
 
     peer = new Peer("CodeShare-"+roomName, {key: '1p6rpt2mga2a9k9'});
     peer.on('open', function(){beServer(peer)});
@@ -32,24 +32,24 @@ window.codeshare = (function(){
     peer.on("open", function(id){
         var conn = peer.connect("CodeShare-"+v);
         conn.on('open', function(){ 
-            room.innerText = v; 
-            errConsole.innerText = '';
+            room.value = v; 
             beClient(conn);
         });
     });
-    peer.on('close', function(){errConsole.innerText = "Closed";startServer();});
-    peer.on('disconnected', function(){errConsole.innerText = "Disconnected";startServer();});
-    peer.on('error', function(e){errConsole.innerText = "Error: "+e;startServer();});
+    peer.on('close', function(){errMsg("Closed");startServer();});
+    peer.on('disconnected', function(){errMsg("Disconnected");startServer();});
+    peer.on('error', function(e){errMsg("Error: "+e);startServer();});
  }
 
  function beClient(conn) {
+     errMsg("Connected");
      conn.on('data', function(data){
          var patches = commitLog.finalize(data);
          patches.forEach(stateEngine.applyPatch);
      });
 
-     conn.on('close', function(){errConsole.innerText = "Closed";startServer();});
-     conn.on('error', function(e){errConsole.innerText = "Error: "+e;startServer();});
+     conn.on('close', function(){errMsg("Closed");startServer();});
+     conn.on('error', function(e){errMsg("Error: "+e);startServer();});
 
      // For Debug!
      console.log("Youre the client, updates blocked for now");
@@ -69,6 +69,7 @@ window.codeshare = (function(){
      peer.on('connection', function(conn){  // possibly > 1
          // setup gaggle, monaco
          connections.push(conn);
+         errMsg(''+ connections.length + " connected");
          /*raft = gaggle({
             id: uuid.v4(),
             clusterSize: connections.length+1, //server too
@@ -79,6 +80,7 @@ window.codeshare = (function(){
          stateEngine.getState().forEach(function(s){conn.send(s)});
          function removeConnection(){
              connections = connections.filter(function(c){ return c !== conn;});
+             errMsg('Someone disconnected. '+connections.length+" remaining.");
          }
          conn.on('close', removeConnection);
          conn.on('error', removeConnection);
@@ -101,6 +103,14 @@ window.codeshare = (function(){
  window.addEventListener('onbeforeunload', function(){ // clean-up old IDs
      peer.destroy();
  });
+
+
+ var msgClear;
+ function errMsg(m){
+     errConsole.innerText = m;
+     clearTimeout(msgClear);
+     msgClear = setTimeout(function(){errConsole.innerText = ''}, 5000);
+ }
 
  startServer();
 
