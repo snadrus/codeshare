@@ -7,6 +7,9 @@ body {
     background: #ccc;
     font-size: 18px;
 }
+.dark {
+    background: #777;
+}
 table {
     margin: 0;
     padding: 0;

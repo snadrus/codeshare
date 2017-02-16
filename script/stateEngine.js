@@ -46,6 +46,14 @@ window.stateEngine = (function(){
         editor.onDidChangeCursorPosition(function(e){
             position = [e.position.column, e.position.lineNumber];
         });
+        document.getElementById('themeSelect').onchange = function(e){
+            editor.updateOptions({theme: e.target.value});
+            if (e.target.value === 'vs') {
+                document.body.classList.remove('dark');
+            } else {
+                document.body.classList.add('dark');
+            }
+        }
         if (runOnLoad){
             runOnLoad();
         }
