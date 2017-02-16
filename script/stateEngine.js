@@ -8,6 +8,7 @@ window.stateEngine = (function(){
             ].join('\n');
     var editor;
     var position;
+    var runOnLoad;
 
     require.config({ paths: { 'vs': '/node_modules/monaco-editor/min/vs' }});
     require(['vs/editor/editor.main'], function() {
@@ -38,14 +39,35 @@ window.stateEngine = (function(){
         // Setup monaco listeners for text change
         editor.onDidChangeModelContent(function(e){
             var newVal = editor.getValue();
-            debugger;
-            chFunc({item: "fulltext", from: currentText,to: newVal});
+            var range = [e.range.startLineNumber, e.range.startColumn, e.range.endLineNumber, e.range.endColumn];
+            chFunc({item: "text", from: currentText,to: {range: range, text: e.text, val: newVal}});
             currentText = newVal
         });
         editor.onDidChangeCursorPosition(function(e){
-        position = [e.position.column, e.position.lineNumber];
-        })
+            position = [e.position.column, e.position.lineNumber];
+        });
+        if (runOnLoad){
+            runOnLoad();
+        }
     });
+
+    function patchText(val){
+        if (val.to.range){
+            editor.executeEdits("peer",[{ 
+                identifier: val.id, 
+                range: new monaco.Range(val.to.range[0], val.to.range[1], val.to.range[2], val.to.range[3]),  // startLine, startCol, EndLine, endCol
+                text: val.to.text
+            }]);
+            if (editor.getValue() !== val.to.val) {
+                console.log("bad merge");
+                editor.setValue(val.to.val);
+                editor.setPosition(position);
+            }
+        } else {
+            editor.setValue(val.to);
+        }
+        currentText = editor.getValue();
+    }
 
     var updateInProgress;
     function applyPatch(patch){
@@ -53,7 +75,7 @@ window.stateEngine = (function(){
         try{
         switch(patch.item){
             case "languageSelect": languageTag.value = patch.to; break;
-            case "fulltext": editor.setValue(patch.to); break; // hokey solution for now
+            case "text": patchText(patch);
         }
         }catch(e){
 
@@ -70,18 +92,18 @@ window.stateEngine = (function(){
     }
 
     function getState() {
-        return [
-            {item: "languageSelect", to: languageTag.value},
-            {item: "fulltext", to: currentText}
-        ];
+        var v= {val: [
+                {item: "languageSelect", to: languageTag.value},
+                {item: "text", to: currentText}
+            ],
+            type:"base"
+        };
+        return v;
     }
     return {
         changeHandler: function(chFuncReq){ chEvt = chFuncReq; },
         applyPatch: applyPatch,
-        readOnly: function(b){ 
-                editor.updateOptions({readOnly:b}); 
-                languageTag.disabled = b;
-            },
-        getState: getState
+        getState: getState,
+        onLoad: function(f){ runOnLoad = f;}
     }
 })();

@@ -31,33 +31,36 @@ window.codeshare = (function(){
     peer = new Peer({key:'1p6rpt2mga2a9k9'}); // random id ok
     peer.on("open", function(id){
         var conn = peer.connect("CodeShare-"+v);
-        conn.on('open', function(){ 
-            room.value = v; 
-            beClient(conn);
-        });
+        beClient(conn, v);
+
     });
     peer.on('close', function(){errMsg("Closed");startServer();});
     peer.on('disconnected', function(){errMsg("Disconnected");startServer();});
     peer.on('error', function(e){errMsg("Error: "+e);startServer();});
  }
 
- function beClient(conn) {
-     git.setPeerId(peer.id);
-     errMsg("Connected");
-     conn.on('data', function(data){
-         git.pullRebase(data,stateEngine.applyPatch);
+ function beClient(conn, v) {
+    conn.on('open', function(){ 
+        room.value = v; 
+        errMsg("Connected");
+        conn.send({type: "base-request"});
+    });
+    conn.on('data', function(data){
+         if (data.type==="base"){
+             ct.I_AM(peer.id, data, errMsg, stateEngine.applyPatch);
+         } else {
+             ct.FromServer(data, stateEngine.applyPatch);
+         }
      });
 
-     conn.on('close', function(){errMsg("Closed");startServer();});
-     conn.on('error', function(e){errMsg("Error: "+e);startServer();});
+    conn.on('close', function(){errMsg("Closed");startServer();});
+    conn.on('error', function(e){errMsg("Error: "+e);startServer();});
 
-     // For Debug!
-     console.log("Youre the client, updates blocked for now");
-     stateEngine.readOnly(true);
-
-     stateEngine.changeHandler(function(ch){
-         git.commit(ch);
-         conn.send(ch);
+    // For Debug!
+    stateEngine.changeHandler(function(ch){
+        if (ct.ClientSelfChange(ch)) {
+            conn.send(ch);
+        }
      })
  }
 
@@ -65,7 +68,9 @@ window.codeshare = (function(){
 
  function beServer(peer) {
      var connections = [];
-     git.setPeerId(peer.id);
+     stateEngine.onLoad(function(){
+         ct.I_AM(peer.id, stateEngine.getState(), errMsg, function(){});
+     });
      peer.on('connection', function(conn){  // possibly > 1
          // setup gaggle, monaco
          connections.push(conn);
@@ -77,7 +82,6 @@ window.codeshare = (function(){
                 name: 'myOwn*****'
             }
          });*/
-         stateEngine.getState().forEach(function(s){conn.send(s)});
          function removeConnection(){
              connections = connections.filter(function(c){ return c !== conn;});
              errMsg('Someone disconnected. '+connections.length+" remaining.");
@@ -85,18 +89,22 @@ window.codeshare = (function(){
          conn.on('close', removeConnection);
          conn.on('error', removeConnection);
          stateEngine.changeHandler(function(ch){  // from, to, and uuid
-             git.push([ch], function(){}); // Names it & records it
+             ct.ServerSelfChange(ch); // Names it & records it
              connections.forEach(function(c){
-                 c.send([ch]);
+                 c.send(ch);
              });
          });
          conn.on('data', function(d){
-             git.merge(d).forEach(function(p){
-                 stateEngine.applyPatch(p);
-                 connections.forEach(function(c){
-                     c.send(p);
-                 });
-             });
+             if (d.type==="base-request"){
+                 conn.send(stateEngine.getState());
+                 return;
+             }
+             var v = ct.FromClient(d, stateEngine.applyPatch);
+             if (v){
+                connections.forEach(function(c){
+                    c.send(v);
+                });
+             }
          });
      });
  }
