@@ -11,11 +11,10 @@
     "url": "https://www.github.com/snadrus/codeshare/"
   },
   "author": "Andy Jackson",
-  "license": "ISC",
+  "license": "BSD",
   "dependencies": {
-    "browserify": "^14.0.0",
-    "gaggle": "^2.1.4",
-    "monaco-editor": "^0.8.0",
-    "webpack": "^1.14.0"
+    "blueimp-md5": "^2.6.0",
+    "diff": "^3.2.0",
+    "monaco-editor": "^0.8.0"
   }
 }

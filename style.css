@@ -32,4 +32,6 @@ input {
     width: 150px;
     margin-left: 30px;
     display: block;
+    background: rgba(0,0,0,0);
+    border: 0;
 }

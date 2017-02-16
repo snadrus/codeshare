@@ -42,10 +42,10 @@ window.codeshare = (function(){
  }
 
  function beClient(conn) {
+     git.setPeerId(peer.id);
      errMsg("Connected");
      conn.on('data', function(data){
-         var patches = commitLog.finalize(data);
-         patches.forEach(stateEngine.applyPatch);
+         git.pullRebase(data,stateEngine.applyPatch);
      });
 
      conn.on('close', function(){errMsg("Closed");startServer();});
@@ -56,7 +56,7 @@ window.codeshare = (function(){
      stateEngine.readOnly(true);
 
      stateEngine.changeHandler(function(ch){
-         commitLog.propose(ch);
+         git.commit(ch);
          conn.send(ch);
      })
  }
@@ -65,7 +65,7 @@ window.codeshare = (function(){
 
  function beServer(peer) {
      var connections = [];
-     var raft;
+     git.setPeerId(peer.id);
      peer.on('connection', function(conn){  // possibly > 1
          // setup gaggle, monaco
          connections.push(conn);
@@ -85,14 +85,14 @@ window.codeshare = (function(){
          conn.on('close', removeConnection);
          conn.on('error', removeConnection);
          stateEngine.changeHandler(function(ch){  // from, to, and uuid
-             var patchesIGNORED = commitLog.finalize([ch]);
+             git.push([ch], function(){}); // Names it & records it
              connections.forEach(function(c){
                  c.send([ch]);
              });
          });
          conn.on('data', function(d){
-             var patches = commitLog.merge(d);
-             patches.forEach(function(p){
+             git.merge(d).forEach(function(p){
+                 stateEngine.applyPatch(p);
                  connections.forEach(function(c){
                      c.send(p);
                  });

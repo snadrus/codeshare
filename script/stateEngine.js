@@ -38,6 +38,7 @@ window.stateEngine = (function(){
         // Setup monaco listeners for text change
         editor.onDidChangeModelContent(function(e){
             var newVal = editor.getValue();
+            debugger;
             chFunc({item: "fulltext", from: currentText,to: newVal});
             currentText = newVal
         });
