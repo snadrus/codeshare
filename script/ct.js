@@ -56,7 +56,7 @@ window.ct = (function(){ // source control at its lightest
                 var us = state[data.item];
                 var them = data.to;
 
-                messageFn("Blind merge!");
+                messageFn("Blind merge! Re-read your code.");
                 //data.to = state[data.item];
                 // TODO adjust data.to.range if we have edited above/before it
                 data.was = undefined; // don't remember you saw this before
