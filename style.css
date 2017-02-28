@@ -38,3 +38,26 @@ input {
     background: rgba(0,0,0,0);
     border: 0;
 }
+
+.myInlineDecoration::before { /*other cursors*/
+    animation: blink-animation 1s steps(5, start) infinite;
+    -webkit-animation: blink-animation 1s steps(5, start) infinite;
+    content:"|";
+    position:absolute;
+    margin-left: -3px;
+    font-size: 1.2em;
+	color: red !important;
+	font-weight: bold;
+	font-style: oblique;
+    z-index: -50;
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}

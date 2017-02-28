@@ -1,3 +1,7 @@
+/*
+Although the source is left readable for auditing & open-ness, this source code is not
+free software and requires a licence for use. 
+*/
 window.codeshare = (function(){
  "use strict";
  var room = document.getElementById("room");
