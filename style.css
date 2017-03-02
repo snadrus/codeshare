@@ -39,25 +39,27 @@ input {
     border: 0;
 }
 
-.myInlineDecoration::before { /*other cursors*/
-    animation: blink-animation 1s steps(5, start) infinite;
-    -webkit-animation: blink-animation 1s steps(5, start) infinite;
+.remoteCursor::before { /*other cursors*/
+    animation: blink-animation 2s infinite;
+    -webkit-animation: blink-animation 2s infinite;
     content:"|";
     position:absolute;
-    margin-left: -3px;
+    margin-left: -4px;
+    margin-top: -1px;
     font-size: 1.2em;
-	color: red !important;
+	color: blue !important;
+    opacity: 0.9;
 	font-weight: bold;
 	font-style: oblique;
     z-index: -50;
 }
 @keyframes blink-animation {
   to {
-    visibility: hidden;
+    opacity: 0.4;
   }
 }
 @-webkit-keyframes blink-animation {
   to {
-    visibility: hidden;
+    opacity: 0.4;
   }
 }

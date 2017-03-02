@@ -52,6 +52,7 @@ window.codeshare = (function(){
     conn.on('data', function(data){
          if (data.type==="base"){
              ct.I_AM(peer.id, data, errMsg, stateEngine.applyPatch);
+             stateEngine.peerId = peer.id;
          } else {
              ct.FromServer(data, stateEngine.applyPatch);
          }
@@ -74,6 +75,7 @@ window.codeshare = (function(){
      var connections = [];
      stateEngine.onLoad(function(){
          ct.I_AM(peer.id, stateEngine.getState(), errMsg, function(){});
+         stateEngine.peerId = peer.id;
      });
      peer.on('connection', function(conn){  // possibly > 1
          // setup gaggle, monaco

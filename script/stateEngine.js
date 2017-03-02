@@ -44,7 +44,9 @@ window.stateEngine = (function(){
             currentText = newVal
         });
         editor.onDidChangeCursorPosition(function(e){
-            position = [e.position.column, e.position.lineNumber];
+            var tmp = [e.position.lineNumber, e.position.column];
+            chFunc({item: "cursor:"+returnable.peerId, from: position, to: tmp});
+            position = tmp;
         });
         document.getElementById('themeSelect').onchange = function(e){
             editor.updateOptions({theme: e.target.value});
@@ -77,6 +79,22 @@ window.stateEngine = (function(){
         currentText = editor.getValue();
     }
 
+    var cursors = {}, decorations = [];
+    function patchCursors(id, val){
+        if (id===returnable.peerId)
+            return;
+        cursors[id] = val;
+        decorations = editor.deltaDecorations(decorations, 
+            Object.keys(cursors).map(function(peer){
+                var pos = cursors[peer];
+                return {
+                    range: new monaco.Range(pos[0],pos[1],pos[0], pos[1]+1),
+                    options: { inlineClassName: 'remoteCursor'}
+                };
+            })
+        );
+    }
+
     var updateInProgress;
     function applyPatch(patch){
         updateInProgress = true;
@@ -84,6 +102,10 @@ window.stateEngine = (function(){
         switch(patch.item){
             case "languageSelect": languageTag.value = patch.to; break;
             case "text": patchText(patch);
+            default:
+                if (patch.item.slice(0,7)==="cursor:"){
+                    patchCursors(patch.item.slice(7), patch.to);
+                }
         }
         }catch(e){
 
@@ -108,10 +130,12 @@ window.stateEngine = (function(){
         };
         return v;
     }
-    return {
+    var returnable = {
         changeHandler: function(chFuncReq){ chEvt = chFuncReq; },
         applyPatch: applyPatch,
         getState: getState,
-        onLoad: function(f){ runOnLoad = f;}
+        onLoad: function(f){ runOnLoad = f;},
+        peerId: ""
     }
+    return returnable;
 })();

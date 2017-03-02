@@ -45,21 +45,24 @@ window.ct = (function(){ // source control at its lightest
             data.id = Math.random()
         },
         FromClient: function(data, stateApplier){ // Merge case. 
-            if (state[data.item]===data.to || state[data.item]===data.to.val) { // do nothing
+            if (state[data.item]===data.to || 
+                (data.to.val !== undefined && state[data.item]===data.to.val)) { // do nothing
                 return false; // No updates necessary
             }
 
             data.was = data.id;
             data.type="ok";
 
-            if (state[data.item]!==data.from) { // merge case
-                var us = state[data.item];
-                var them = data.to;
+            if (state[data.item]!==data.from && state[data.item]!== undefined) { // merge case
+                 if (!Array.isArray(state[data.item]) || !state[data.item].every(function(v,i){ return v===data.from[i]})) {
+                    var us = state[data.item];
+                    var them = data.to;
 
-                messageFn("Blind merge! Re-read your code.");
-                //data.to = state[data.item];
-                // TODO adjust data.to.range if we have edited above/before it
-                data.was = undefined; // don't remember you saw this before
+                    messageFn("Blind merge! Re-read your code.");
+                    //data.to = state[data.item];
+                    // TODO adjust data.to.range if we have edited above/before it
+                    data.was = undefined; // don't remember you saw this before
+                 }
             }
 
             state[data.item] = (data.to && data.to.val? data.to.val : data.to);
